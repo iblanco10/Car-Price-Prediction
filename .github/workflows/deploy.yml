@@ -10,35 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up job
-        run: echo "Starting CI/CD deployment..."
+    - name: Set up job
+      run: echo "Starting CI/CD pipeline"
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Install Heroku CLI
-        run: |
-          curl https://cli-assets.heroku.com/install.sh | sh
+    # Install Heroku CLI
+    - name: Install Heroku CLI
+      run: curl https://cli-assets.heroku.com/install.sh | sh
 
-      - name: Login to Heroku
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          echo $HEROKU_API_KEY | heroku auth:token
-          heroku container:login
+    # Login to Heroku using the API key stored in GitHub secrets
+    - name: Login to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      run: |
+        echo $HEROKU_API_KEY | heroku auth:token
+        heroku container:login
 
-      - name: Build & Push to Heroku
-        run: |
-          heroku container:push web -a car-price-ml
-          heroku container:release web -a car-price-ml
+    # Build and push Docker image to Heroku
+    - name: Build & Push to Heroku
+      run: |
+        heroku container:push web -a car-price-ml
+        heroku container:release web -a car-price-ml
 
-      - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+    # Login to Docker Hub using stored credentials
+    - name: Login to Docker Hub
+      env:
+        DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      run: |
+        echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
 
-      - name: Build & Push to Docker Hub
-        run: |
-          docker build -t iblanco10/car-price-predictor:latest .
-          docker push iblanco10/car-price-predictor:latest
+    # Build and push the Docker image to Docker Hub
+    - name: Build & Push to Docker Hub
+      run: |
+        docker build -t iblanco10/car-price-predictor:latest .
+        docker push iblanco10/car-price-predictor:latest
 
-      - name: Post Checkout code
-        run: echo "Deployment complete!"
+    - name: Post Checkout code
+      run: echo "Deployment complete!"
