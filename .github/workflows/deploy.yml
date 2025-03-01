@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Set up job
-        run: echo "Starting Deployment..."
+        run: echo "Starting CI/CD deployment..."
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,11 +21,14 @@ jobs:
           curl https://cli-assets.heroku.com/install.sh | sh
 
       - name: Login to Heroku
-        run: echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          echo $HEROKU_API_KEY | heroku auth:token
+          heroku container:login
 
       - name: Build & Push to Heroku
         run: |
-          heroku container:login
           heroku container:push web -a car-price-ml
           heroku container:release web -a car-price-ml
 
@@ -38,4 +41,4 @@ jobs:
           docker push iblanco10/car-price-predictor:latest
 
       - name: Post Checkout code
-        run: echo "Deployment completed successfully!"
+        run: echo "Deployment complete!"
