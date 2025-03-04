@@ -1,0 +1,57 @@
+# Car Price Prediction ML Model: Kubernetes Deployment
+
+## Overview
+This document details the successful deployment of the Car Price Prediction ML model using Kubernetes, completing the final requirement of the 
+project.
+
+## Deployment Strategy
+The model was deployed as a Kubernetes application with the following components:
+- Deployment with 2 replicas for high availability
+- LoadBalancer service for external access
+- Local Docker image for simplified deployment
+
+## Configuration Files
+
+### Deployment YAML
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: car-price-predictor-local
+  labels:
+    app: car-price-predictor
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: car-price-predictor
+  template:
+    metadata:
+      labels:
+        app: car-price-predictor
+    spec:
+      containers:
+      - name: car-price-predictor
+        image: car-price-predictor-fix:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080  # Updated to match the actual port
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: car-price-predictor-service
+spec:
+  selector:
+    app: car-price-predictor
+  ports:
+  - port: 80
+    targetPort: 8080  # Updated to match the Flask application port
+  type: LoadBalancer

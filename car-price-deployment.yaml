@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: car-price-predictor
+  labels:
+    app: car-price-predictor
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: car-price-predictor
+  template:
+    metadata:
+      labels:
+        app: car-price-predictor
+    spec:
+      containers:
+      - name: car-price-predictor
+        image: 977099010778.dkr.ecr.us-east-2.amazonaws.com/car-price-predictor:latest
+        ports:
+        - containerPort: 5000
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+      imagePullSecrets:
+      - name: ecr-secret
